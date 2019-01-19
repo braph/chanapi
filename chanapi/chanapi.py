@@ -50,7 +50,7 @@ class ChanUpload():
         tree = self.getTree(url)
         self.postTree(tree, *args, **kwargs)
 
-    def postTree(self, tree, subject='', text='', files=None, email='', password=None):
+    def postTree(self, tree, text='', name='', subject='', email='', files=None, password=None):
         # email=sage
         form = tree.xpath('//form[@name = "post"]')[0]
 
@@ -71,6 +71,8 @@ class ChanUpload():
         data['subject'] = subject
         data['body']    = text
         data['email']   = email
+        if name:
+            data['user'] = name
         if password:
             data['password'] = password
 
