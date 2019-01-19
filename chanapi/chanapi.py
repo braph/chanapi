@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 
+import os
 import json
 import time
 import requests
 import tempfile
 
+from os.path import dirname
 from urllib.parse import urlparse, urlunparse
-from os.path import dirname, basename
 
 from lxml import html
 
@@ -131,12 +132,13 @@ class ChanUpload():
 
         with tempfile.NamedTemporaryFile('wb', prefix='captcha') as f:
             f.file.write(result.content)
-            os.system("feh '%s' &" % f.file.name)
+            f.file.flush()
+            os.system("feh '%s' &" % f.name)
 
-        while True:
-            code = input('Captcha: ')
-            if code:
-                break
+            while True:
+                code = input('Captcha: ')
+                if code:
+                    break
 
         data = dict(captcha_code=code)
         result = self.requests_obj.post(self.captcha_solve_url, data=data)
