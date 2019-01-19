@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import json
+import time
 import requests
 import tempfile
 
@@ -8,6 +9,15 @@ from urllib.parse import urlparse, urlunparse
 from os.path import dirname, basename
 
 from lxml import html
+
+class PostError(Exception):
+    pass
+
+class FloodDetected(PostError):
+    pass
+
+class CaptchaError(PostError):
+    pass
 
 class ChanUpload():
     __slots__ = (
@@ -47,10 +57,23 @@ class ChanUpload():
         return html.fromstring(result.content)
 
     def post(self, url, *args, **kwargs):
+        ''' See _postTree for args '''
         tree = self.getTree(url)
-        self.postTree(tree, *args, **kwargs)
+        return self.postTree(tree, *args, **kwargs)
 
-    def postTree(self, tree, text='', name='', subject='', email='', files=None, password=None):
+    def postTree(self, *args, tries=10, **kwargs):
+        ''' See _postTree for args '''
+
+        ex = None
+        for _ in range(tries):
+            try:
+                return self._postTree(*args, **kwargs)
+            except PostError as e:
+                time.sleep(5)
+                ex = e
+        raise ex
+
+    def _postTree(self, tree, text='', name='', subject='', email='', files=None, password=None):
         # email=sage
         form = tree.xpath('//form[@name = "post"]')[0]
 
@@ -82,24 +105,25 @@ class ChanUpload():
 
         result = self.requests_obj.post(self.post_url, data=data, files=files_data)
         json_result = json.loads(result.text)
+
         if 'redirect' in json_result:
             return json_result
 
-        try:
-            json_result = json.loads(result.text)
-            if 'ip_bypass' in json_result['error']:
+        elif 'error' in json_result:
+            if 'Flood' in json_result['error']:
+                raise FloodDetected(json_result)
+
+            elif 'ip_bypass' in json_result['error']:
                 print('must solve a captcha ')
                 if not solveCaptcha():
-                    print('nope!')
-                    return False
-            elif 'redirect' in json_result:
-                return json_result['redirect']
-        except:
-            pass
+                    print('captcha solving failed nope!')
+                raise CaptchaError(json_result)
+            else:
+                raise PostError(json_result)
 
-        result = self.requests_obj.post(self.post_url, data=data, files=files_data)
-        print(result)
-        print(result.text)
+        #result = self.requests_obj.post(self.post_url, data=data, files=files_data)
+        #print(result.text)
+        #return result
 
 
     def solveCaptcha(self, max_tries=3):
