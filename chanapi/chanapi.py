@@ -43,14 +43,14 @@ class ChanUpload():
     def loadCookies(self, storage_file):
         ''' Load cookies into session '''
         try:
-            with open(storage_file, 'r') as fh:
+            with open(storage_file, 'rb') as fh:
                 self.requests_obj.cookies.update(json.load(fh))
         except FileNotFoundError as e:
             print(e)
 
     def storeCookies(self, storage_file):
         ''' Store cookies '''
-        with open(storage_file, 'w') as fh:
+        with open(storage_file, 'wb') as fh:
             json.dump(dict(self.requests_obj.cookies), fh)
 
     def getTree(self, url):
@@ -62,7 +62,7 @@ class ChanUpload():
         tree = self.getTree(url)
         return self.postTree(tree, *args, **kwargs)
 
-    def postTree(self, *args, tries=10, **kwargs):
+    def postTree(self, *args, tries=15, **kwargs):
         ''' See _postTree for args '''
 
         ex = None
@@ -127,7 +127,7 @@ class ChanUpload():
         #return result
 
 
-    def solveCaptcha(self, max_tries=3):
+    def solveCaptcha(self, max_tries=5):
         result = self.requests_obj.get(self.captcha_url)
 
         with tempfile.NamedTemporaryFile('wb', prefix='captcha') as f:
