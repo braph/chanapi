@@ -19,12 +19,28 @@ class ChanUpload():
         'requests_obj'
     )
     
-    def __init__(self, base_url, requests_obj):
+    def __init__(self, base_url, requests_obj=None):
+        if not requests_obj:
+            requests_obj = requests.Session()
+
         self.base_url = base_url
         self.post_url           = base_url + '/post.php'
         self.requests_obj       = requests_obj
         self.captcha_url        = base_url + '/inc/lib/captcha/captcha.php'
         self.captcha_solve_url  = base_url + '/ip_bypass.php'
+
+    def loadCookies(self, storage_file):
+        ''' Load cookies into session '''
+        try:
+            with open(storage_file, 'r') as fh:
+                self.requests_obj.cookies.update(json.load(fh))
+        except FileNotFoundError as e:
+            print(e)
+
+    def storeCookies(self, storage_file):
+        ''' Store cookies '''
+        with open(storage_file, 'w') as fh:
+            json.dump(dict(self.requests_obj.cookies), fh)
 
     def getTree(self, url):
         result = self.requests_obj.get(url)
