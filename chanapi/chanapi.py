@@ -46,11 +46,11 @@ class ChanUpload():
         result = self.requests_obj.get(url)
         return html.fromstring(result.content)
 
-    def doPost(self, url, *args, **kwargs):
+    def post(self, url, *args, **kwargs):
         tree = self.getTree(url)
-        self.doPostTree(tree, *args, **kwargs)
+        self.postTree(tree, *args, **kwargs)
 
-    def doPostTree(self, tree, subject='', text='', files=None, email='', password=None):
+    def postTree(self, tree, subject='', text='', files=None, email='', password=None):
         # email=sage
         form = tree.xpath('//form[@name = "post"]')[0]
 
