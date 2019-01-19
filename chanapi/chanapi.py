@@ -45,7 +45,9 @@ class ChanUpload():
         try:
             with open(storage_file, 'r') as fh:
                 self.requests_obj.cookies.update(json.load(fh))
-        except FileNotFoundError as e:
+        except FileNotFoundError:
+            pass
+        except Exception as e:
             print(e)
 
     def storeCookies(self, storage_file):
