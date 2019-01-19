@@ -43,14 +43,14 @@ class ChanUpload():
     def loadCookies(self, storage_file):
         ''' Load cookies into session '''
         try:
-            with open(storage_file, 'rb') as fh:
+            with open(storage_file, 'r') as fh:
                 self.requests_obj.cookies.update(json.load(fh))
         except FileNotFoundError as e:
             print(e)
 
     def storeCookies(self, storage_file):
         ''' Store cookies '''
-        with open(storage_file, 'wb') as fh:
+        with open(storage_file, 'w') as fh:
             json.dump(dict(self.requests_obj.cookies), fh)
 
     def getTree(self, url):

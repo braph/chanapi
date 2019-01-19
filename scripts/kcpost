@@ -1,0 +1,51 @@
+#!/usr/bin/python3
+
+import sys
+import requests
+import argparse
+import traceback
+
+from chanapi import *
+
+base_url = 'https://kohlchan.net'
+parser = argparse.ArgumentParser(description='post to kc')
+parser.add_argument('url',          help='or board')
+parser.add_argument('text',         help='- for STDIN')
+parser.add_argument('--name',       default='')
+parser.add_argument('--email',      default='')
+parser.add_argument('--sage',       help='alias for --email=sage',
+    dest='email', action='store_const', const='sage')
+parser.add_argument('--subject',    default='')
+parser.add_argument('--password',   default='')
+parser.add_argument('--file',       action='append')
+parser.add_argument('--cookie',     default='/tmp/kc.post.cookies')
+parser.add_argument('--user-agent',
+    default='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36' )
+args = parser.parse_args()
+
+if args.text == '-':
+    args.text = sys.stdin.read(-1)
+
+if len(args.url) < 5:
+    args.url = '%s/%s/' % (base_url, args.url)
+
+session = requests.Session()
+session.headers.update({'User-Agent': args.user_agent})
+session.cookies.update({'cookieConsent': 'true'})
+
+KCPost  = ChanUpload(base_url, session)
+KCPost.loadCookies(args.cookie)
+
+result = KCPost.post(
+    args.url,
+    text=args.text,
+    subject=args.subject,
+    email=args.email,
+    name=args.name,
+    files=args.file
+)
+
+print(result)
+
+KCPost.storeCookies(args.cookie)
+
