@@ -115,7 +115,7 @@ class ChanUpload():
 
             elif 'ip_bypass' in json_result['error']:
                 print('must solve a captcha ')
-                if not solveCaptcha():
+                if not self.solveCaptcha():
                     print('captcha solving failed nope!')
                 raise CaptchaError(json_result)
             else:
@@ -129,7 +129,7 @@ class ChanUpload():
     def solveCaptcha(self, max_tries=3):
         result = self.requests_obj.get(self.captcha_url)
 
-        with open(tempfile.NamedTemporaryFile('wb', prefix='captcha')) as f:
+        with tempfile.NamedTemporaryFile('wb', prefix='captcha') as f:
             f.file.write(result.content)
             os.system("feh '%s' &" % f.file.name)
 
