@@ -64,7 +64,7 @@ class ChanUpload():
         tree = self.getTree(url)
         return self.postTree(tree, *args, **kwargs)
 
-    def postTree(self, *args, tries=15, **kwargs):
+    def postTree(self, *args, sleep=10, tries=15, **kwargs):
         ''' See _postTree for args '''
 
         ex = None
@@ -72,7 +72,7 @@ class ChanUpload():
             try:
                 return self._postTree(*args, **kwargs)
             except PostError as e:
-                time.sleep(5)
+                time.sleep(sleep)
                 ex = e
         raise ex
 
