@@ -20,6 +20,9 @@ class FloodDetected(PostError):
 class CaptchaError(PostError):
     pass
 
+class BannedError(PostError):
+    pass
+
 class ChanUpload():
     __slots__ = (
         'base_url',
@@ -71,6 +74,8 @@ class ChanUpload():
         for _ in range(tries):
             try:
                 return self._postTree(*args, **kwargs)
+            except BannedError:
+                raise
             except PostError as e:
                 time.sleep(sleep)
                 ex = e
@@ -109,20 +114,28 @@ class ChanUpload():
         result = self.requests_obj.post(self.post_url, data=data, files=files_data)
         json_result = json.loads(result.text)
 
-        if 'redirect' in json_result:
-            return json_result
+        try:
+            if 'redirect' in json_result:
+                return json_result
 
-        elif 'error' in json_result:
-            if 'Flood' in json_result['error']:
-                raise FloodDetected(json_result)
+            elif 'error' in json_result:
+                if 'banned' in json_result:
+                    raise BannedError(json_result)
 
-            elif 'ip_bypass' in json_result['error']:
-                print('must solve a captcha ')
-                if not self.solveCaptcha():
-                    print('captcha solving failed nope!')
-                raise CaptchaError(json_result)
-            else:
-                raise PostError(json_result)
+                elif 'Flood' in json_result['error']:
+                    raise FloodDetected(json_result)
+
+                elif 'ip_bypass' in json_result['error']:
+                    print('must solve a captcha ')
+                    if not self.solveCaptcha():
+                        print('captcha solving failed nope!')
+                    raise CaptchaError(json_result)
+                else:
+                    raise PostError(json_result)
+        except PostError:
+            raise
+        except Exception as e:
+            raise Exception(json_result)
 
         #result = self.requests_obj.post(self.post_url, data=data, files=files_data)
         #print(result.text)

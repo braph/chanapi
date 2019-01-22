@@ -1,0 +1,39 @@
+#!/usr/bin/python3
+
+import sys
+import requests
+import argparse
+import traceback
+
+from chanapi import *
+
+domain = 'kohlchan.net'
+base_url = 'https://' + domain
+parser = argparse.ArgumentParser(description='post to '+domain)
+parser.add_argument('url',                help='URL or board')
+parser.add_argument('-n', '--name',       default='')
+parser.add_argument('-e', '--email',      default='')
+parser.add_argument('-s', '--subject',    default='')
+parser.add_argument('-f', '--file',       action='append')
+parser.add_argument('-S', '--sage',       help='Alias for --email=sage',
+    dest='email', action='store_const', const='sage')
+parser.add_argument('-p', '--password',   default='')
+parser.add_argument('--cookie',     default='/tmp/kc.post.cookies')
+parser.add_argument('--user-agent',
+    default='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36' )
+args = parser.parse_args()
+
+session = requests.Session()
+session.headers.update({'User-Agent': args.user_agent})
+session.cookies.update({'cookieConsent': 'true'})
+
+KC = ChanJson(base_url, session)
+
+threads = KC.getCatalog(args.url)
+
+for thread in threads:
+    for r in thread['threads']:
+        print('%s/%s/res/%s.html' % (base_url, 'b', r['no']))
+    
+
+
