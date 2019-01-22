@@ -49,7 +49,7 @@ class ChanUpload():
             with open(storage_file, 'r') as fh:
                 self.requests_obj.cookies.update(json.load(fh))
         except FileNotFoundError:
-            pass
+            pass #print('warning:', )
         except Exception as e:
             print(e)
 
@@ -184,7 +184,10 @@ class ChanJson():
         'requests_obj'
     )
 
-    def __init__(self, base_url, requests_obj=requests):
+    def __init__(self, base_url, requests_obj=None):
+        if not requests_obj:
+            requests_obj = requests
+
         self.base_url       = base_url
         self.board_url      = base_url + '/%s/%d.json'
         self.thread_url     = base_url + '/%s/res/%d.json'
