@@ -207,7 +207,7 @@ class ChanJson():
     def getCatalog(self, board):
         return self.getJson(self.catalog_url % board)
 
-    def getAllThreadsOfBoard(board):
+    def getAllThreadsOfBoard(self, board):
         catalog = getCatalog(board)
         for cata in catalog:
             for thread in cata['threads']:
@@ -215,6 +215,18 @@ class ChanJson():
                     yield getThread('b', thread['no'])
                 except Exception as e:
                     print(e)
+
+    #def mkJson(url):
+    #    ''' Return JSON url '''
+    #    # https://kohlchan.net/m/res/21058.html
+    #    parts = urlparse(url)
+    #    path = parts.path
+    #    path = dirname(path)
+    #    path = path.replace('res', 'src')
+    #    path += '/%s%s' % (post['tim'], post['ext'])
+    #    parts = parts._replace(path=path)
+    #    return urlunparse(parts)
+
 
 class FileInfo():
     __slots__ = (
