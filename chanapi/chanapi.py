@@ -11,6 +11,8 @@ from urllib.parse import urlparse, urlunparse
 
 from lxml import html
 
+import deadsimplethreading
+
 class PostError(Exception):
     pass
 
@@ -198,8 +200,8 @@ class ChanJson():
         result = self.requests_obj.get(url)
         return json.loads(result.text)
 
-    def getBoard(self, board):
-        return self.getJson(self.board_url % board)
+    def getBoard(self, board, page=1):
+        return self.getJson(self.board_url % (board, page))
 
     def getThread(self, board, thread):
         return self.getJson(self.thread_url % (board, thread))
@@ -207,12 +209,15 @@ class ChanJson():
     def getCatalog(self, board):
         return self.getJson(self.catalog_url % board)
 
+    @deadsimplethreading.threaded_func
     def getAllThreadsOfBoard(self, board):
-        catalog = getCatalog(board)
+        catalog = self.getCatalog(board)
         for cata in catalog:
             for thread in cata['threads']:
                 try:
-                    yield getThread('b', thread['no'])
+                    yield deadsimplethreading.threaded(
+                        ChanJson.getThread, self, board, thread['no']
+                    )
                 except Exception as e:
                     print(e)
 
