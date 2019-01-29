@@ -21,7 +21,8 @@ parser.add_argument('-S', '--sage',       help='Alias for --email=sage',
 parser.add_argument('-p', '--password',   default='')
 parser.add_argument('--cookie',     default='/tmp/kc.post.cookies')
 parser.add_argument('--user-agent',
-    default='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36' )
+    default='Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko')
+#    default='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36' )
 args = parser.parse_args()
 
 if args.text == '-':

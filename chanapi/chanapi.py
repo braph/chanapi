@@ -171,6 +171,33 @@ class ChanUpload():
         return True
 
 
+#class ChanURLs():
+#    def getThread
+
+#    https://kohlchan.net/m/res/21058.html
+#                        /m/res/20202.html
+#                        /m/1.html
+#                        /m/
+#
+#    def getJSON(self, url):
+#        pass
+#
+#
+#    chanUrls = ChanURLs('http://kohlchan.net')
+#    chanUrls.json.
+
+
+
+    #def mkJson(url):
+    #    ''' Return JSON url '''
+    #    # https://kohlchan.net/m/res/21058.html
+    #    parts = urlparse(url)
+    #    path = parts.path
+    #    path = dirname(path)
+    #    path = path.replace('res', 'src')
+    #    path += '/%s%s' % (post['tim'], post['ext'])
+    #    parts = parts._replace(path=path)
+    #    return urlunparse(parts)
 
 class ChanJson():
     '''
@@ -205,6 +232,12 @@ class ChanJson():
 
     def getThread(self, board, thread):
         return self.getJson(self.thread_url % (board, thread))
+
+    #def getBoardUrl(self, board, page=1):
+    #    return self.board_url % (board, page)
+
+    #def getThreadUrl(self, board, thread):
+    #    return self.thread_url % (board, thread)
 
     def getCatalog(self, board):
         return self.getJson(self.catalog_url % board)
