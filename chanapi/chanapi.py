@@ -3,6 +3,7 @@
 import os
 import json
 import time
+import base64
 import requests
 import tempfile
 
@@ -32,6 +33,8 @@ class ChanUpload():
         'captcha_url',
         'captcha_solve_url',
 
+        'fortune_captcha_url', # TOR
+
         'requests_obj'
     )
     
@@ -44,6 +47,7 @@ class ChanUpload():
         self.requests_obj       = requests_obj
         self.captcha_url        = base_url + '/inc/lib/captcha/captcha.php'
         self.captcha_solve_url  = base_url + '/ip_bypass.php'
+        self.fortune_captcha_url = base_url + '/fortune_captcha.php'
 
     def loadCookies(self, storage_file):
         ''' Load cookies into session '''
@@ -95,6 +99,8 @@ class ChanUpload():
             except Exception as e:
                 pass #print(e, inp.attrib)
 
+        print(list(data.keys()))
+
         files_data = {}
         if files:
             for f, fkey in zip(files, ['file', 'file2', 'file3', 'file4']):
@@ -110,11 +116,12 @@ class ChanUpload():
             data['password'] = password
 
         #print(data)
-        #print(data.keys())
+        print(list(data.keys()))
         #print(files_data)
 
         result = self.requests_obj.post(self.post_url, data=data, files=files_data)
         json_result = json.loads(result.text)
+        print(json_result)
 
         try:
             if 'redirect' in json_result:
@@ -132,6 +139,12 @@ class ChanUpload():
                     if not self.solveCaptcha():
                         print('captcha solving failed nope!')
                     raise CaptchaError(json_result)
+
+                elif 'fortune_captcha' in json_result['error']:
+                    print('must solve a fortune captcha ')
+                    if not self.solveFortuneCaptcha():
+                        print('captcha solving failed nope!')
+                    raise CaptchaError(json_result)
                 else:
                     raise PostError(json_result)
         except PostError:
@@ -143,6 +156,44 @@ class ChanUpload():
         #print(result.text)
         #return result
 
+    def _inputForCaptcha(self, f):
+        os.system("feh '%s' &" % f)
+
+        while True:
+            code = input('Captcha: ')
+            if code:
+                return code
+
+    def solveFortuneCaptcha(self, max_tries=30):
+        # http-equiv="refresh" content="15">
+        result = self.requests_obj.get(self.fortune_captcha_url)
+        print(result.text)
+        tree = html.fromstring(result.content)
+
+        data = {}
+        inputs = tree.xpath('.//input')
+        for inp in inputs:
+            data[inp.name] = inp.attrib.get('value', '')
+
+        img_base64 = tree.xpath('//img/@src')[0]
+        img_base64 = img_base64.split('base64,')[1]
+        img_data   = base64.standard_b64decode(img_base64)
+        with tempfile.NamedTemporaryFile('wb', prefix='captcha') as f:
+            f.file.write(img_data)
+            f.file.flush()
+            data['captcha_code'] = self._inputForCaptcha(f.name)
+
+        result = self.requests_obj.post(self.fortune_captcha_url, data=data)
+        print(result)
+        print(result.text)
+
+        if 'Try again' in result.text:
+            if max_tries > 1:
+                return self.solveCaptcha(max_tries - 1)
+            else:
+                return False
+
+        return True
 
     def solveCaptcha(self, max_tries=5):
         result = self.requests_obj.get(self.captcha_url)
@@ -150,12 +201,7 @@ class ChanUpload():
         with tempfile.NamedTemporaryFile('wb', prefix='captcha') as f:
             f.file.write(result.content)
             f.file.flush()
-            os.system("feh '%s' &" % f.name)
-
-            while True:
-                code = input('Captcha: ')
-                if code:
-                    break
+            code = self._inputForCaptcha(f.name)
 
         data = dict(captcha_code=code)
         result = self.requests_obj.post(self.captcha_solve_url, data=data)
